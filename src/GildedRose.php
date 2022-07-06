@@ -5,6 +5,13 @@ namespace App;
 class GildedRose
 {
     private $items;
+    private $enabled_item_types = [
+        'Aged Brie' => \App\ItemsStrategies\AgedBrie::class, 
+        'Backstage passes to a TAFKAL80ETC concert' => \App\ItemsStrategies\BackstagePase::class, 
+        'Sulfuras, Hand of Ragnaros' => \App\ItemsStrategies\Sulfuras::class, 
+        'normal' => \App\ItemsStrategies\Normal::class, 
+        'Conjured Mana Cake' => \App\ItemsStrategies\Conjured::class, 
+    ];
 
     public function __construct(array $items)
     {
@@ -22,48 +29,9 @@ class GildedRose
     public function nextDay()
     {
         foreach ($this->items as $item) {
-            if ($item->name != 'Aged Brie' and $item->name != 'Backstage passes to a TAFKAL80ETC concert') {
-                if ($item->quality > 0) {
-                    if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                        $item->quality = $item->quality - 1;
-                    }
-                }
-            } else {
-                if ($item->quality < 50) {
-                    $item->quality = $item->quality + 1;
-                    if ($item->name == 'Backstage passes to a TAFKAL80ETC concert') {
-                        if ($item->sellIn < 11) {
-                            if ($item->quality < 50) {
-                                $item->quality = $item->quality + 1;
-                            }
-                        }
-                        if ($item->sellIn < 6) {
-                            if ($item->quality < 50) {
-                                $item->quality = $item->quality + 1;
-                            }
-                        }
-                    }
-                }
-            }
-            if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                $item->sellIn = $item->sellIn - 1;
-            }
-            if ($item->sellIn < 0) {
-                if ($item->name != 'Aged Brie') {
-                    if ($item->name != 'Backstage passes to a TAFKAL80ETC concert') {
-                        if ($item->quality > 0) {
-                            if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                                $item->quality = $item->quality - 1;
-                            }
-                        }
-                    } else {
-                        $item->quality = $item->quality - $item->quality;
-                    }
-                } else {
-                    if ($item->quality < 50) {
-                        $item->quality = $item->quality + 1;
-                    }
-                }
+            if (array_key_exists($item->name, $this->enabled_item_types)) {
+                $itemStrategy = new $this->enabled_item_types[$item->name];
+                $itemStrategy->applyDecrement($item);
             }
         }
     }
